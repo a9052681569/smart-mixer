@@ -4,7 +4,7 @@ void fastTicksTask() {
 
 	tempController.tick();
 	waterFaucet.myTick();
-	mixer.tick(tempController.currentIntTemp, tempController.tempChangeSpeed, data.targetTemp);
+	mixer.tick(tempController.currentFloatTemp, tempController.tempChangeSpeed, data.targetTemp);
 
 	int8_t signal = WiFi.RSSI();
 

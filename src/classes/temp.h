@@ -9,6 +9,11 @@ class TempController: public GyverNTC {
 		int currentIntTemp = 0;
 
 		/**
+		 * точная текущая температура
+		*/
+		float currentFloatTemp = 0;
+
+		/**
 		 * скорость изменения температуры
 		 * 
 		 * Положительное значение значит что температура растет
@@ -27,16 +32,13 @@ class TempController: public GyverNTC {
 		 * точная температура при последнем опросе
 		*/
 		float lastTemp = 0;
-		/**
-		 * точная текущая температура
-		*/
-		float currentFloatTemp = 0;
+		
 
 		void calcTemp() {
 			// читаем и сохраняем текущую температуру
-			this->currentFloatTemp = getTempAverage();
+			this->currentFloatTemp = this->getTempAverage(50);
 			
-			bool isBigAbsDifference = abs(this->currentFloatTemp - this->lastTemp) > 0.5;
+			bool isBigAbsDifference = abs(this->currentFloatTemp - this->lastTemp) > 0.2;
 			bool isIntDifference = int(this->currentFloatTemp) != int(this->lastTemp);
 
 			if (isBigAbsDifference && isIntDifference) {

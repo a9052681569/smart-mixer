@@ -1,5 +1,5 @@
 void sendDataTick() {
-	myData.currentTemp = mixer.currentTemp;
+	myData.currentTemp = tempController.currentIntTemp;
 
 	myData.targetTemp = data.targetTemp;
 

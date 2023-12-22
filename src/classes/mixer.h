@@ -7,7 +7,7 @@ class Mixer {
 		*/
 		int targetTemp = 38;
 
-		int currentTemp = 0;
+		int currentFloatTemp = 0;
 
 		void init(void (*warmer)(int percent), void (*colder)(int percent), int targetTemp) {
 			this->makeWarmer = *warmer;
@@ -15,8 +15,8 @@ class Mixer {
 			this->targetTemp = targetTemp;
 		}
 
-		void tick(int temp, float tempChangeSpeed, int targetTemp) {
-			this->currentTemp = temp;
+		void tick(int currentFloatTemp, float tempChangeSpeed, int targetTemp) {
+			this->currentFloatTemp = currentFloatTemp;
 
 			this->tempChangeSpeed = tempChangeSpeed;
 
@@ -39,7 +39,7 @@ class Mixer {
 		}
 
 		int getOptimalTurn() {
-			int tempDifAbs = abs(this->targetTemp - this->currentTemp);
+			float tempDifAbs = abs(this->targetTemp - this->currentFloatTemp);
 
 			/**
 			 * чем меньше разница между текущей и целевой температурой тем точнее мы хотим регулировать краны
@@ -48,12 +48,12 @@ class Mixer {
 			 * 
 			 * при этом при большем проценте поворота регулировка будет проходить быстрее
 			*/
-			if (tempDifAbs <= 1) {
+			if (tempDifAbs <= 1.5) {
 				return 1;
-			} else if (tempDifAbs <= 5) {
+			} else if (tempDifAbs <= 3) {
 				return tempDifAbs * 2;
 			} else {
-				return 10;
+				return 20;
 			}
 		}
 
@@ -66,33 +66,34 @@ class Mixer {
 		*/
 		int getTurnDirection() {
 			// желаемое направление
-			int wishDirection = this->targetTemp - this->currentTemp;
+			int tempDif = this->targetTemp - this->currentFloatTemp;
 
-			if (wishDirection == 0) {
+			// ждем если гуляем около целевой температуры
+			if (abs(tempDif) <= 0.5) {
 				return 0;
 			}
 
-			// притормаживаем если летим в нужном направлении, но с высокой скоростью
+			// притормаживаем если летим с высокой скоростью
 			// чтобы притормозить крутим кран в обратном направлении от желаемого
-			if (abs(this->tempChangeSpeed) > 2.5 && this->isPositive(wishDirection) == this->isPositive(this->tempChangeSpeed)) {
-				return 0 - wishDirection;
+			if (abs(this->tempChangeSpeed) > 2.5) {
+				return 0 - tempDif;
 			}
 
-			// ждем если летим в нужном направлении не супер быстро, но и не медленно
+			// ждем если летим не супер быстро, но и не медленно
 			// так мы дождемся стабилизации температуры
-			if (abs(this->tempChangeSpeed) > 0.3 && this->isPositive(wishDirection) == this->isPositive(this->tempChangeSpeed)) {
+			if (abs(this->tempChangeSpeed) > 0.1) {
 				return 0;
 			}
 
-			return wishDirection;
+			return tempDif;
 		}
 
 	private:
 		float tempChangeSpeed = 0;
 
-		bool isPositive(int num) {
-			return num > 0;
-		}
+		// bool isPositive(int num) {
+		// 	return num > 0;
+		// }
 
 		void (*makeWarmer)(int percent);
 		void (*makeColder)(int percent);
